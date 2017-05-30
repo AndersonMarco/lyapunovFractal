@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Landing Page - Start Bootstrap Theme</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/landing-page.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+     
+    <script type="application/javascript" src="js/jquery.js"></script>
+    <script type="application/javascript" src="js/webgl-utils.js"></script>    
+    <script type="application/javascript" src="js/init.js"></script>
+    <script type="application/javascript" src="js/navibar.js"></script>
+    <script id="2d-fragment-shader" type="x-shader/x-fragment" >
+         precision mediump float;
+            
+
+         // the texCoords passed in from the vertex shader.
+         varying vec2 v_point;
+
+         uniform int u_sizeOfString;
+         uniform sampler2D u_string;
+
+         void main() {
+             float x=0.5;
+             float r;
+             int pString=0;
+             float lyapunov=0.0;
+             float u_sizeOfString_float=float(u_sizeOfString);
+             for(int i=0;i<200;i++){
+                 if(pString==u_sizeOfString) pString=0;
+                 if(texture2D(u_string, vec2((float(pString)+0.5)/u_sizeOfString_float, 0)).x==0.0){
+                     r=v_point.x;
+                 }
+                 else{
+                     r=v_point.y;
+                 }
+                 x=x*r*(1.0-x);
+                 lyapunov=lyapunov+log(abs(r*(1.0-(2.0*x))));
+                 
+                 pString++;
+             }
+             lyapunov=lyapunov/1000.0;
+             /*if(lyapunov>0.0)
+                 gl_FragColor = vec4(0,log((lyapunov*2.0)+1.0)/log(2.0),1.0-(log((lyapunov*2.0)+1.0)/log(2.0)),1);
+             else
+                 gl_FragColor = vec4(0,0,1,1);
+             */
+             if(lyapunov>0.0)
+                 gl_FragColor = vec4(0,0,0,1);
+             else
+                  gl_FragColor = vec4(1,1,1,1);
+         }
+        </script>
+        <script id="2d-vertex-shader" type="x-shader/x-vertex">
+         attribute vec2 a_position;
+         attribute vec2 a_point;
+
+         uniform vec2 u_resolution;
+         
+         varying vec2 v_point;
+         
+         void main() {
+             // convert the rectangle from pixels to 0.0 to 1.0
+             vec2 zeroToOne = a_position / u_resolution;
+             
+             // convert from 0->1 to 0->2
+             vec2 zeroToTwo = zeroToOne * 2.0;
+             
+             // convert from 0->2 to -1->+1 (clipspace)
+             vec2 clipSpace = zeroToTwo - 1.0;
+             
+             gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+             
+             // pass the texCoord to the fragment shader
+             // The GPU will interpolate this value between points.
+             v_point = a_point;
+         }
+        </script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top topnav" style="background-color:rgba(0, 0, 0, 0.6);"role="navigation">
+        <div class="container topnav nav navbar-nav navbar-right">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header ">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand topnav" href="#" style=" padding: 0; font-size: 18px; padding-top: 15px; ">Lyapunov Fractal</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="padding-right:60px;">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#control">Controls</a>
+                    </li>
+                    <li>
+                        <a href="#fractalImage">Fractal</a>
+                    </li>
+                    <li>
+                        <a href="#urlExported">url exported</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+
+    <!-- Header -->
+    <div class="intro-header">
+        <div class="container">
+
+            <div id="control" class="row" style="padding-top:1%;">
+                <div class="col-lg-12">
+                    <div class="col-lg-4">
+                        <div class="row" style="background-color: rgba(0,0,0,0.6); padding-bottom:20px; padding-top:2px; margin-top:20px;">
+                            <h3>Location setup</h3>
+                            <div class="col-lg-6" >
+                                <div class="input-group input-group"  style="padding-bottom:20px;">
+                                    <span class="input-group-addon" id="sizing-addon1">x</span>
+                                    <input id="positionX"  data-toggle="element '+i+' of string" type="text" class="form-control" placeholder="" aria-describedby="sizing-addon2" readonly style="background-color:#fff">
+                                </div>
+                            </div>
+                            <div class="col-lg-6" >
+                                <div class="input-group input-group" style="padding-bottom:20px;" >
+                                    <span class="input-group-addon" id="sizing-addon1">y</span>
+                                    <input id="positionY" type="text" class="form-control" placeholder="" aria-describedby="sizing-addon2" readonly style="background-color:#fff">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="background-color: rgba(0,0,0,0.6); padding-bottom:20px; padding-top:2px; margin-top:20px;">
+                            <h3>Scale</h3>
+                            <div class="col-lg-12" style="padding-bottom:5%;">  
+                                <input id="scale" type="text" class="form-control" placeholder="" aria-describedby="sizing-addon2" readonly style="background-color:#fff"> 
+                            </div>
+
+                            <div style="display:inline-block; padding-right:5%;" >  
+                                <a id="zoom-in" href= "javascript:void(0)" class="btn btn-default btn-lg"><i class=" glyphicon glyphicon-zoom-in "></i> <span class="network-name"></span></a>
+                            </div>
+
+                            <div style="display:inline-block;" >  
+                                <a id="zoom-out" href= "javascript:void(0)" class="btn btn-default btn-lg"><i class=" glyphicon glyphicon-zoom-out "></i> <span class="network-name"></span></a>
+                            </div>
+
+                        </div>
+
+                    </div>
+                   
+                    
+
+                    <div class="col-lg-2">
+                    </div>
+
+                    <div class="col-lg-4" style="background-color: rgba(0,0,0,0.6); padding-bottom:20px; padding-top:2px; margin-top:20px;">
+                        <h3>String</h3>
+                        <div id="inputString" style="overflow: auto; max-height:250px;">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <a style="display: block;    position: relative;    top: -60px;    visibility: hidden;" id="fractalImage"></a>            
+            <div id="fractalImage" style="padding-top:20px;" class="row">
+                <div id="fractal" class="col-lg-12" >
+                    
+                    <canvas id="myCanvas" width="512" height="512"></canvas>
+                </div>
+            </div>     
+            <div id="urlExported" class="row">
+                <div class="row" style="background-color: rgba(0,0,0,0.6); padding-bottom:20px; padding-top:2px; margin-top:20px;">
+                    <h3>Url exported</h3>
+                    <div class="col-lg-12" >
+                                 
+                                 
+                        <input id="url" type="text" class="form-control" placeholder="" aria-describedby="sizing-addon2"  value="" readonly>
+                    </div>
+                    
+                </div>
+            </div>
+        
+        </div>
+        <!-- /.container -->
+
+    </div>
+
+
+
+   
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
